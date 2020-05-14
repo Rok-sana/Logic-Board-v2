@@ -28,9 +28,9 @@ extension SKShapeNode {
     }
 }
 
-extension UIImage {
+public extension UIImage {
     
-    func texture(size: CGSize) -> SKTexture? {
+  public func texture(size: CGSize) -> SKTexture? {
         let textureSize = CGRect(origin: .zero, size: self.size)
         UIGraphicsBeginImageContext(CGSize(width: size.width, height: size.height))
         let context = UIGraphicsGetCurrentContext()

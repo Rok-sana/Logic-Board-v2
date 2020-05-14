@@ -41,7 +41,7 @@ public class Board: SKSpriteNode {
         let diodWidth = Constant.gateSize
         let boardSize = CGSize(width: Constant.marginBetweenBoardAndButton + firstSignalButton.width + Constant.marginBetweenButtonAndSection + sectionsWidth + Constant.marginBetweenSectionAndDiod + diodWidth + Constant.marginBetweenBoardAndDiod, height: higherSection!.frame.size.height)
         
-        super.init(texture: UIImage(named: "backgroundPatter.png")!.texture(size: boardSize), color: .red, size: boardSize)
+        super.init(texture: nil, color: .clear, size: boardSize)
         
         let buttonXPostion: CGFloat = -self.frame.size.width/2 + Constant.marginBetweenBoardAndButton
         firstSignalButton.position = CGPoint(x: buttonXPostion, y: Constant.buttonYPosition)
