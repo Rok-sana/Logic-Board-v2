@@ -8,6 +8,8 @@
 import Foundation
 import SpriteKit
 
+public let contSize = CGSize(width: 700, height: 500)
+
 public struct Constant {
     
     static let boardAncherName: String = "BoardAncher"
@@ -26,6 +28,7 @@ public struct Constant {
     static let marginBetweenBoardAndDiod: CGFloat = 15
     static let operatorCurveMargin: CGFloat = 16
     static let logoLeftMargin: CGFloat = 8
+    
     
     //MARK: - Texts
     public struct Text {
