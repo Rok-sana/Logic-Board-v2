@@ -2,6 +2,133 @@ import PlaygroundSupport
 import UIKit
 import SpriteKit
 
+enum LevelOfDifficulty: String, CaseIterable {
+    case easy = "Easy"
+    case medium = "Medium"
+    case hard = "Hard"
+    
+    var countOfOperators: Int {
+        switch self {
+        case .easy:
+            return 1
+        case .medium:
+            return 2
+        case .hard:
+            return 3
+        }
+    }
+    var bgColor: UIColor {
+        switch self {
+        case .easy:
+            return .green
+        case .medium:
+            return .orange
+        case .hard:
+            return .red
+        }
+    }
+}
+
+class PracticeViewController: UIViewController {
+    
+    var currentLevel: LevelOfDifficulty = .easy // by default
+    var redBox: Board?
+    var scene: SKScene!
+    
+    var  skView: SKView = {
+        let view = SKView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    var buttonsStack: UIStackView  = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.distribution = .fill
+        stackView.spacing = 10
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    override func loadView() {
+        
+        super.loadView()
+        self.preferredContentSize = CGSize(width: 700, height: 500)
+        // Create the scene and add it to the view
+        
+        scene = SKScene(size: contSize)
+        scene.scaleMode = SKSceneScaleMode.aspectFit
+        scene.backgroundColor = .clear
+        skView.backgroundColor = .clear
+        skView.presentScene(scene)
+        scene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        
+        // Add a red box to the scene
+        // scene.addChild(backgroundNode)
+        redBox = Board(sections: [Section(logicOperators: getRandomSetOfOperators().first!), Section(logicOperators: getRandomSetOfOperators().last!)], diodeColor: .random)
+        scene.addChild(redBox!)
+        view.backgroundColor = UIColor(patternImage: UIImage(named: "backgroundPatter.png")!)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        
+        //  navigationController?.navigationBar.tintColor = .yellow
+        setupLayout()
+        
+    }
+    
+    func setupLayout() {
+        
+        view.addSubview(skView)
+        skView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        skView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        skView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        skView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        LevelOfDifficulty.allCases.forEach {
+            let button = CommonCustomButton(level: $0)
+            button.addTarget(self, action: #selector(didSelectLevelButton(button: )), for: .touchUpInside)
+            buttonsStack.addArrangedSubview(button)
+        }
+        
+        view.addSubview(buttonsStack)
+        buttonsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        buttonsStack.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        
+    }
+    
+    @objc func didSelectLevelButton(button: CommonCustomButton) {
+        guard let level = button.currentLevel else { return }
+        redBox?.removeFromParent()
+        currentLevel = level
+        redBox = Board(sections: [Section(logicOperators: getRandomSetOfOperators().first!), Section(logicOperators: getRandomSetOfOperators().last!)], diodeColor: .random)
+        scene.addChild(redBox!)
+    }
+    
+    func getRandomSetOfOperators() -> [[LogicOperator]] {
+        var array:[LogicOperator] = []
+        let amountOfSecrion = 2
+        let countOfOperators = currentLevel.countOfOperators * amountOfSecrion
+        for i in 0..<countOfOperators {
+            if let item = LogicOperator.allCases.randomElement() {
+                array.append(item)
+            }
+        }
+        let result = array.chunked(into: currentLevel.countOfOperators)
+        return result
+    }
+    func chunked(by array: [LogicOperator],into size: Int) -> [[LogicOperator]] {
+        return stride(from: 0, to: array.count, by: size).map {
+            Array(array[$0 ..< min($0 + size, array.count)])
+        }
+    }
+    
+}
+
+
+
 enum ColorDiod: String, CaseIterable {
     case red
     case blue
@@ -10,16 +137,154 @@ enum ColorDiod: String, CaseIterable {
     
 }
 
+enum BaseButtonType: String, CaseIterable {
+    
+    case basic = "Basic"
+    case practice = "Practice"
+    case tips = "What is Boolean Algebra?"
+    
+}
+
+class CommonCustomButton: UIButton {
+    
+    var logicOperator: LogicOperator?
+    var currentLevel: LevelOfDifficulty?
+    
+    init() {
+        super.init(frame: .zero)
+    }
+    
+    convenience init(logicOperator: LogicOperator) {
+        self.init()
+        self.logicOperator = logicOperator
+        configButton()
+        backgroundColor =  UIColor(red: 215/255.0, green: 216/255.0, blue: 211/255.0, alpha: 1.0)//.orange
+        setTitle(logicOperator.rawValue, for: .normal)
+        heightAnchor.constraint(equalToConstant: 50.0).isActive = true
+        widthAnchor.constraint(equalToConstant: 70.0).isActive = true
+    }
+    
+    convenience init(textItem: BaseButtonType) {
+        self.init()
+        configButton()
+        backgroundColor =  UIColor(red: 215/255.0, green: 216/255.0, blue: 211/255.0, alpha: 1.0)
+        setTitle(textItem.rawValue, for: .normal)
+        heightAnchor.constraint(equalToConstant: 60.0).isActive = true
+        widthAnchor.constraint(equalToConstant: 250.0).isActive = true
+        
+    }
+    
+    convenience init( level: LevelOfDifficulty) {
+        self.init()
+        configButton()
+        currentLevel = level
+        backgroundColor = level.bgColor
+        setTitle(level.rawValue, for: .normal)
+        heightAnchor.constraint(equalToConstant: 60.0).isActive = true
+        widthAnchor.constraint(equalToConstant: 150.0).isActive = true
+    }
+    
+    func configButton() {
+        translatesAutoresizingMaskIntoConstraints = false
+        isUserInteractionEnabled = true
+        layer.borderColor = UIColor.black.cgColor
+        setTitleColor(.black, for: .normal)
+        layer.borderWidth = 1.0
+        titleLabel?.font = UIFont(name: "bitwise", size: 16)!
+        let ySpace: CGFloat = 10.0
+        let xSpace: CGFloat = 15.0
+        contentEdgeInsets = UIEdgeInsets(top: ySpace, left: xSpace, bottom: ySpace, right: xSpace)
+    }
+    
+    
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class BasicViewController: UIViewController {
+    
+    var logicOperator: LogicOperator = .AND // by default
+    var logicOperatorsButtons: [CommonCustomButton] = []
+    var redBox: Board?
+    var scene: SKScene!
+    var  skView: SKView = {
+        let view = SKView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    var buttonsStack: UIStackView  = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.distribution = .fill
+        stackView.spacing = 10
+        stackView.alignment = .center
+        return stackView
+    }()
+    
+    override func loadView() {
+        
+        super.loadView()
+        self.preferredContentSize = CGSize(width: 700, height: 500)
+        // Create the scene and add it to the view
+        
+        scene = SKScene(size: contSize)
+        scene.scaleMode = SKSceneScaleMode.aspectFit
+        scene.backgroundColor = .clear
+        skView.backgroundColor = .clear
+        skView.presentScene(scene)
+        scene.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        
+        // Add a red box to the scene
+        redBox = Board(sections: [Section(logicOperators: [logicOperator])])
+        scene.addChild(redBox!)
+        view.backgroundColor = UIColor(patternImage: UIImage(named: "backgroundPatter.png")!)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        
+        setupLayout()
+        
+    }
+    
+    func setupLayout() {
+        
+        view.addSubview(skView)
+        skView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        skView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        skView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        skView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        
+        LogicOperator.allCases.forEach {
+            let button = CommonCustomButton(logicOperator: $0)
+            logicOperatorsButtons.append(button)
+            button.addTarget(self, action: #selector(didSelectOperator(button:)), for: .touchUpInside)
+            buttonsStack.addArrangedSubview(button)
+        }
+        
+        view.addSubview(buttonsStack)
+        buttonsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 0).isActive = true
+        buttonsStack.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        
+    }
+    @objc func didSelectOperator(button: CommonCustomButton) {
+        guard let pattern = button.logicOperator else { return }
+        redBox?.removeFromParent()
+        redBox = Board(logicOperator: pattern)
+        scene.addChild(redBox!)
+    }
+    
+}
+
 class DiodImageView: UIImageView {
     var turnOnImage: UIImage?
     var turnOffImage: UIImage?
     var timer: Timer?
-    
-    //    var isActiveState: Bool = false {
-    //        didSet {
-    //            image = isActiveState ? turnOnImage : turnOffImage
-    //        }
-    //    }
     
     init(color: ColorDiod) {
         super.init(image: DiodImageView.getImagebyColorDiod(color))
@@ -37,8 +302,8 @@ class DiodImageView: UIImageView {
         animationDuration = 1
         startAnimating()
     }
-
-   static func getImagebyColorDiod(_ color: ColorDiod, _ isTurnOn: Bool = false) -> UIImage? {
+    
+    static func getImagebyColorDiod(_ color: ColorDiod, _ isTurnOn: Bool = false) -> UIImage? {
         let mode = isTurnOn ? "on" : "off"
         let lampString = "_lamp_"
         return UIImage(named: color.rawValue + lampString + mode)
@@ -46,7 +311,6 @@ class DiodImageView: UIImageView {
     
 }
 
-//let redBox = Board(logicOperator: .AND, diodeColor: .red)
 let contSize = CGSize(width: 700, height: 500)
 
 class EscapeViewController: UIViewController {
@@ -66,24 +330,20 @@ class EscapeViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
         label.numberOfLines = 3
-        label.text = " Basics \n  of \n Boolean Algebra"
+        label.text = " Basics of Boolean Algebra"
         label.textColor = .yellow
         return label
     }()
     
-    
-    var nextButton: UIButton = {
-        var button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.backgroundColor = .orange
-        button.layer.borderWidth = 1.0
-        button.layer.borderColor = UIColor.black.cgColor
-        button.setTitle("Next", for: .normal)
-        return button
+    var buttonsStack: UIStackView  = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 10
+        stackView.alignment = .center
+        return stackView
     }()
-    
-    
-    
     
     override func loadView() {
         super.loadView()
@@ -101,14 +361,9 @@ class EscapeViewController: UIViewController {
         }
         titleLabel.font = UIFont(name: "bitwise", size: 80)!
         subTitleLabel.font = UIFont(name: "bitwise", size: 40)!
+        
         navigationController?.setNavigationBarHidden(true, animated: false)
         setupLayout()
-        addDiods()
-        
-    }
-    
-    func addDiods() {
-        
         
     }
     
@@ -125,8 +380,8 @@ class EscapeViewController: UIViewController {
             emptyView.backgroundColor = .clear
             var x = emptyView.frame.minX
             var y =  emptyView.frame.minY
-            print(emptyView.frame.minX)
-            //print(point * i )
+            
+            
             var r = max(170 * i, 10)
             var u =  10
             for j in 0..<3 {
@@ -138,7 +393,7 @@ class EscapeViewController: UIViewController {
                 //var y =  max(emptyView.bounds.minY * CGFloat(j), emptyView.bounds.minY)
                 x = 200/// min(x + CGFloat(step), emptyView.frame.maxX)
                 y = 0//min(y + CGFloat(step), emptyView.frame.maxY)
-                print(emptyView.frame.maxX)
+                
                 imageView.frame = CGRect(origin: CGPoint(x: r, y: u), size: size)
                 if i < 1 {
                     r += step
@@ -168,29 +423,8 @@ class EscapeViewController: UIViewController {
                 arrayImageView[value].startAnimateDiods()
                 arrayImageView[value + 3].startAnimateDiods()
             }, completion: nil)
-            
-//            DispatchQueue.main.asyncAfter(deadline: dispatchAfter, execute: {
-//
-//        })
         }
-//        for i in 0..<2 {
-//            stride(from: i, to: arrayImageView.count, by: 3).forEach { value in
-//                DispatchQueue.main.asyncAfter(deadline: .now() + i, execute: {
-//                    if value <= arrayImageView.count - 1 {
-//                        arrayImageView[value].startAnimateDiods()
-//                        print(value)
-//                    }
-//
-//                    //print(arrayImageView.count)
-//                   // arrayImageView[value + 2].startAnimateDiods()
-//                })
-//            }
-//        }
         
-//        DispatchQueue.main.async {
-//            d
-//            arrayImageView.forEach{ $0.startAnimateDiods()}
-//        }
         view.addSubview(titleLabel)
         titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 30).isActive = true
@@ -199,19 +433,43 @@ class EscapeViewController: UIViewController {
         subTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         subTitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30).isActive = true
         
-        view.addSubview(nextButton)
-        nextButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        nextButton.widthAnchor.constraint(equalToConstant: 120).isActive = true
-        nextButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        nextButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20).isActive = true
-        nextButton.addTarget(self, action: #selector(nextButtonDidtap), for: .touchUpInside)
+        
+        let basicButton = CommonCustomButton(textItem: .basic)
+        basicButton.addTarget(self, action: #selector(nextButtonDidtap), for: .touchUpInside)
+        
+        let practiceButton = CommonCustomButton(textItem: .practice)
+        practiceButton.addTarget(self, action: #selector(practiceButtonDidTap), for: .touchUpInside)
+        let tipsButton = CommonCustomButton(textItem: .tips)
+        buttonsStack.addArrangedSubview(basicButton)
+        buttonsStack.addArrangedSubview(practiceButton)
+        buttonsStack.addArrangedSubview(tipsButton)
+        view.addSubview(buttonsStack)
+        buttonsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        buttonsStack.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        //        nextButton.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        //        nextButton.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        buttonsStack.topAnchor.constraint(equalTo: subTitleLabel.bottomAnchor, constant: 30).isActive = true
+        
         
     }
     
     @objc func nextButtonDidtap() {
-        let logicBoard = LogicBoard()
-        navigationController?.pushViewController(logicBoard, animated: true)
+        let logicBoard = BasicViewController()//LogicBoard()
+        DispatchQueue.main.async {
+            self.navigationController?.pushViewController(logicBoard, animated: true)
+        }
+        
     }
+    
+    
+    @objc func practiceButtonDidTap() {
+           let logicBoard =  PracticeViewController()//LogicBoard()
+           DispatchQueue.main.async {
+               self.navigationController?.pushViewController(logicBoard, animated: true)
+           }
+           
+       }
+   
 }
 
 class LogicBoard: UIViewController {
@@ -222,20 +480,6 @@ class LogicBoard: UIViewController {
         
         navigationController?.navigationBar.tintColor = .yellow
         
-    }
-    
-    public func texture(image: UIImage ,size: CGSize) -> SKTexture? {
-        let textureSize = CGRect(origin: .zero, size: image.size)
-        UIGraphicsBeginImageContext(CGSize(width: size.width, height: size.height))
-        let context = UIGraphicsGetCurrentContext()
-        context?.draw(image.cgImage!, in: textureSize, byTiling: true)
-        let image: UIImage? = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        var texture: SKTexture? = nil
-        if let CGImage = image?.cgImage {
-            texture = SKTexture(cgImage: CGImage)
-        }
-        return texture
     }
     
     override func loadView() {

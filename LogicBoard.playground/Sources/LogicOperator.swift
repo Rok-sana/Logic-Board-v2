@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 import SpriteKit
 
-public enum LogicOperator: String {
+public enum LogicOperator: String, CaseIterable, Equatable {
     case AND
     case OR
     case XOR
