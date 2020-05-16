@@ -1,6 +1,7 @@
 import PlaygroundSupport
 import UIKit
 import SpriteKit
+import AVKit
 
 enum LevelOfDifficulty: String, CaseIterable {
     case easy = "Easy"
@@ -29,7 +30,7 @@ enum LevelOfDifficulty: String, CaseIterable {
     }
 }
 
-class PracticeViewController: UIViewController {
+class PracticeViewController: UIViewController, AppleComputerViewDelegate {
     
     var currentLevel: LevelOfDifficulty = .easy // by default
     var redBox: Board?
@@ -78,6 +79,16 @@ class PracticeViewController: UIViewController {
         //  navigationController?.navigationBar.tintColor = .yellow
         setupLayout()
         
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        let appleComputerView = AppleComputerView(text:Constant.Text.operatorsSpeech, delegate: self)
+        self.view.addSubview(appleComputerView)
+        self.view.leadingAnchor.constraint(equalTo: appleComputerView.leadingAnchor).isActive = true
+        self.view.bottomAnchor.constraint(equalTo: appleComputerView.bottomAnchor).isActive = true
     }
     
     func setupLayout() {
@@ -119,12 +130,22 @@ class PracticeViewController: UIViewController {
         let result = array.chunked(into: currentLevel.countOfOperators)
         return result
     }
+    
     func chunked(by array: [LogicOperator],into size: Int) -> [[LogicOperator]] {
         return stride(from: 0, to: array.count, by: size).map {
             Array(array[$0 ..< min($0 + size, array.count)])
         }
     }
     
+    //MARK: - AppleComputerViewDelegate
+    
+    func speechDidFinish(_ view: AppleComputerView) {
+        UIView.animate(withDuration: 0.3, animations: {
+            view.alpha = 0
+        }) { (finish) in
+            view.removeFromSuperview()
+        }
+    }
 }
 
 
@@ -479,7 +500,6 @@ class LogicBoard: UIViewController {
         navigationController?.setNavigationBarHidden(false, animated: false)
         
         navigationController?.navigationBar.tintColor = .yellow
-        
     }
     
     override func loadView() {

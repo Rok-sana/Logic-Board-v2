@@ -12,6 +12,10 @@ protocol ConductorDelegate: class {
     func conductorDidRemove(_ conductor: Conductor)
 }
 
+protocol ConductorGateDelegate: class {
+    func gateStateDidChange()
+}
+
 class Conductor: SKShapeNode {
     
     let firstGate: Gate
@@ -22,6 +26,14 @@ class Conductor: SKShapeNode {
         self.firstGate = firstGate
         self.secodGate = secodGate
         super.init()
+        
+        setConductorColor()
+        
+        lineCap = .round
+        glowWidth = 20
+        lineWidth = 1.0
+        lineWidth = 3
+        
         let bezierPath = UIBezierPath()
         let startPosition = firstGate.convert(firstGate.frame.center, to: parentNode)
         let endPosition = secodGate.convert(secodGate.frame.center, to: parentNode)
@@ -33,15 +45,29 @@ class Conductor: SKShapeNode {
         let endCircle = UIBezierPath(ovalIn: CGRect(x: endPosition.x-circleSize/2, y: endPosition.y-circleSize/2, width: circleSize, height: circleSize))
         bezierPath.append(endCircle)
         self.path = bezierPath.cgPath
-        strokeColor = .yellow
-        fillColor = .yellow
-        lineWidth = 1.0
-        lineWidth = 3
+        firstGate.conductorDelegate = self
+        secodGate.conductorDelegate = self
+       
+        
+        
         commonConfiguration()
         firstGate.addConnection(with: secodGate)
         secodGate.addConnection(with: firstGate)
         
+    }
+    
+    func setConductorColor() {
         
+        let zeroSignalColor = UIColor(red: 252.0/255.0, green: 22.0/255.0, blue: 29.0/255.0, alpha: 1.0)
+        
+        switch firstGate.state {
+        case .value(let isOn):
+            strokeColor = isOn ? .green : zeroSignalColor
+            fillColor = isOn ? .green : zeroSignalColor
+        default:
+            strokeColor = .lightGray
+            fillColor = .lightGray
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -54,4 +80,12 @@ class Conductor: SKShapeNode {
         delegate?.conductorDidRemove(self)
         removeFromParent()
     }
+}
+
+extension Conductor: ConductorGateDelegate {
+    func gateStateDidChange() {
+        setConductorColor()
+    }
+    
+    
 }

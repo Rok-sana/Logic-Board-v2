@@ -26,6 +26,7 @@ class Gate: SKShapeNode {
     
     let type: GType
     weak var delegate: GateDelegate?
+    weak var conductorDelegate: ConductorGateDelegate?
     var selected: Bool = false
     var connectedGates:[Gate] = []
     
@@ -36,6 +37,8 @@ class Gate: SKShapeNode {
             if self.type != .output {
                 delegate?.gateStateDidChange(self)
             }
+            
+            conductorDelegate?.gateStateDidChange()
         }
     }
     
