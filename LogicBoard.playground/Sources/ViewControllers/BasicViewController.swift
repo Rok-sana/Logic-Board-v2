@@ -56,8 +56,8 @@ public class BasicViewController: UIViewController {
         view.addSubview(skView)
         skView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         skView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        skView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        skView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        skView.topAnchor.constraint(equalTo: view.topAnchor, constant: -60).isActive = true
+        skView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0).isActive = true
         
         LogicOperator.allCases.forEach {
             let button = CommonCustomButton(logicOperator: $0)
