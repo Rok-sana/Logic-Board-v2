@@ -6,7 +6,6 @@ public enum BaseButtonType: String, CaseIterable {
     case basic = "Basic"
     case practice = "Practice"
     case tips = "What is Boolean Algebra?"
-    
 }
 
 public enum LevelOfDifficulty: String, CaseIterable {

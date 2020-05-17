@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 public class EscapeViewController: UIViewController {
-    
+    public var arrayImageView: [DiodImageView] = []
     var titleLabel: UILabel = {
         let label = UILabel()
         
@@ -36,7 +36,7 @@ public class EscapeViewController: UIViewController {
     public override func loadView() {
         super.loadView()
         
-        self.preferredContentSize = contSize
+        self.preferredContentSize = CGSize(width: 700, height: 500)
         view.backgroundColor = UIColor(patternImage: UIImage(named: "backgroundPatter.png")!)
     }
     
@@ -52,36 +52,27 @@ public class EscapeViewController: UIViewController {
         
         navigationController?.setNavigationBarHidden(true, animated: false)
         setupLayout()
-        
+        startAnnimateDiods()
     }
     
-    func setupLayout() {
-        
-        var arrayImageView: [DiodImageView] = []
+    public func setupLayout() {
         let size  = CGSize(width: 20, height: 40)
         let step = 60
         let point = 500
         
         for i in 0..<2 {
-            
             var emptyView = UIView(frame: CGRect(x: point * i , y: 0, width: 200, height: 200))
             emptyView.backgroundColor = .clear
             var x = emptyView.frame.minX
             var y =  emptyView.frame.minY
-            
-            
             var r = max(170 * i, 10)
             var u =  10
             for j in 0..<3 {
                 let color = ColorDiod.allCases[j]
                 let imageView = DiodImageView(color: color)
                 arrayImageView.append(imageView)
-                
-                
-                //var y =  max(emptyView.bounds.minY * CGFloat(j), emptyView.bounds.minY)
-                x = 200/// min(x + CGFloat(step), emptyView.frame.maxX)
-                y = 0//min(y + CGFloat(step), emptyView.frame.maxY)
-                
+                x = 200
+                y = 0
                 imageView.frame = CGRect(origin: CGPoint(x: r, y: u), size: size)
                 if i < 1 {
                     r += step
@@ -90,23 +81,10 @@ public class EscapeViewController: UIViewController {
                     r -= step
                     u -= step * (-1)
                 }
-                
                 emptyView.addSubview(imageView)
             }
-           
             view.addSubview(emptyView)
-            
         }
-        
-        for value in 0..<arrayImageView.count/2 {
-            var dispatchAfter = DispatchTimeInterval.seconds(value)
-            
-            UIView.animate(withDuration: 0, delay: TimeInterval(value), options: .curveLinear, animations: {
-                arrayImageView[value].startAnimateDiods()
-                arrayImageView[value + 3].startAnimateDiods()
-            }, completion: nil)
-        }
-        
         view.addSubview(titleLabel)
         titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         titleLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 30).isActive = true
@@ -114,7 +92,6 @@ public class EscapeViewController: UIViewController {
         view.addSubview(subTitleLabel)
         subTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         subTitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30).isActive = true
-        
         
         let basicButton = CommonCustomButton(textItem: .basic)
         basicButton.addTarget(self, action: #selector(nextButtonDidtap), for: .touchUpInside)
@@ -129,8 +106,16 @@ public class EscapeViewController: UIViewController {
         buttonsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
         buttonsStack.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         buttonsStack.topAnchor.constraint(equalTo: subTitleLabel.bottomAnchor, constant: 30).isActive = true
-        
-        
+    }
+    
+    public func startAnnimateDiods() {
+        for value in 0..<arrayImageView.count/2 {
+            let seconds = 0.3 + Double(value)
+            DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+                self.arrayImageView[value].startAnimateDiod()
+                self.arrayImageView[value + 3].startAnimateDiod()
+            }
+        }
     }
     
     @objc func nextButtonDidtap() {
@@ -138,16 +123,14 @@ public class EscapeViewController: UIViewController {
         DispatchQueue.main.async {
             self.navigationController?.pushViewController(logicBoard, animated: true)
         }
-        
     }
     
-    
     @objc func practiceButtonDidTap() {
-           let logicBoard =  PracticeViewController()//LogicBoard()
-           DispatchQueue.main.async {
-               self.navigationController?.pushViewController(logicBoard, animated: true)
-           }
-           
-       }
-   
+        let logicBoard =  PracticeViewController()//LogicBoard()
+        DispatchQueue.main.async {
+            self.navigationController?.pushViewController(logicBoard, animated: true)
+        }
+        
+    }
 }
+

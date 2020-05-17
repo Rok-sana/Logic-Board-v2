@@ -4,6 +4,7 @@ import SpriteKit
 import AVKit
 
 let rootViewController = EscapeViewController()
+
 let navigation = UINavigationController(rootViewController: rootViewController)
 
 navigation.navigationBar.setBackgroundImage(UIImage(), for: .default)

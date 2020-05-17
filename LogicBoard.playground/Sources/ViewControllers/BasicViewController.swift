@@ -48,7 +48,6 @@ public class BasicViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
         
         setupLayout()
-        
     }
     
     func setupLayout() {
